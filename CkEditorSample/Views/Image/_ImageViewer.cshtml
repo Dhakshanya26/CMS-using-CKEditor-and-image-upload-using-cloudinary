@@ -1,0 +1,58 @@
+﻿
+@model CkEditorSample.Models.ImageModel
+<div class="Page">
+    <div class="right">
+        <button type="button" class="btn-success col-md-offset-8" value="Upload Image" onclick="window.location.href='@Url.Action("UploadImage","Image")'">Upload Image</button>
+    </div>
+    @if (Model.Images.Count > 0)
+    {
+        <div class="imageContainer modal-content">
+            @foreach (var src in Model.Images)
+            {
+                <div class="imageBox">
+                    <a  onclick="OnImageClick('@src.ImageUrl')"><img src="@src.ImageUrl" alt="Image" class="imagePreview" style="width:230px;height:150px;" /></a>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="imageCenter">
+            No images have been uploaded so far. @Html.ActionLink("Click here", "Image") to upload an image.
+        </div>
+    }
+    <div class="clear"></div>
+</div>
+<script>
+    function OnImageClick(imageurl) {
+        window.top.opener.CKEDITOR.dialog.getCurrent().setValueOf('info', 'txtUrl', encodeURI(imageurl));
+        window.top.close(); window.top.opener.focus();
+    }
+</script>
+
+<style>
+    .imageContainer {
+        width: 1110px;
+        height: 650px;
+        margin: 10px;
+        padding: 30px;
+        overflow: auto;
+        overflow-x: scroll;
+        overflow-y:hidden;
+        
+    }
+
+    .imageBox {
+        width: 255px;
+        height: 160px;
+        padding: 10px;
+        float: left;
+        margin:1px;
+    }
+
+    .Page {
+        margin: 30px;
+        background: aliceblue;
+        border-radius: 4px;
+    }
+</style>

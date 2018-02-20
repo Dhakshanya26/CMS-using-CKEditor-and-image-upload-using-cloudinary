@@ -1,0 +1,8 @@
+C:\CkEditorSample\CloudinaryService\bin\Debug\CloudinaryService.dll
+C:\CkEditorSample\CloudinaryService\bin\Debug\CloudinaryService.pdb
+C:\CkEditorSample\CloudinaryService\bin\Debug\CloudinaryDotNet.dll
+C:\CkEditorSample\CloudinaryService\bin\Debug\Newtonsoft.Json.dll
+C:\CkEditorSample\CloudinaryService\bin\Debug\Newtonsoft.Json.xml
+C:\CkEditorSample\CloudinaryService\obj\Debug\CloudinaryService.dll
+C:\CkEditorSample\CloudinaryService\obj\Debug\CloudinaryService.pdb
+C:\CkEditorSample\CloudinaryService\obj\Debug\CloudinaryService.csprojResolveAssemblyReference.cache

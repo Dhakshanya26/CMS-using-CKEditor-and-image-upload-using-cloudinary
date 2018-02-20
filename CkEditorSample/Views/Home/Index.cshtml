@@ -1,0 +1,10 @@
+﻿@model CkEditorSample.Models.ImageModel
+@using CkeditorSample.Helpers;
+
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    @Html.HubHtmlTextEditorFor(m => m.HtmlText, null);
+</div>

@@ -1,0 +1,236 @@
+﻿
+@{
+    Layout = null;
+}
+@using CkeditorSample.Helpers;
+<link href="~/Content/ImageArea.css" rel="stylesheet" />
+
+@model CkEditorSample.Models.UploadImageModel
+
+
+<link href="~/Content/bootstrap.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-2.2.1.min.js"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.min.js")"></script>
+<script src="@Url.Content("~/Scripts/jquery.validate.unobtrusive.min.js")"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+
+<link href="~/Content/imgAreaSelect/imgareaselect-default.css" rel="stylesheet" />
+<link href="~/Content/imgAreaSelect/jquery.awesome-cropper.css" rel="stylesheet" />
+<script src="~/Scripts/imgAreaSelect/jquery.imgareaselect.js"></script>
+
+<script src="~/Scripts/imgAreaSelect/jquery.awesome-cropper.js"></script>
+<script src="~/Scripts/imgAreaSelect/jquery.imgareaselect.js"></script>
+<script>
+ 
+    $(document).ready(function () {
+        
+        imageWidth = $('.main img').width();
+        parentWidth = $('.main').width();
+        if (imageWidth > parentWidth) {
+            $('.main img').css('width', '100%');
+        }
+        else {
+            $('.main img').css('vertical-align', 'middle');
+        }
+        //Get the checkboxes and disable them
+        var boxes = $('input[type=checkbox]').attr('disabled', true);
+
+        //Get the preview image and set the onload event handler
+        var preview = $('#preview').load(function () {
+            setPreview();
+            ias.setOptions({
+                x1: 0,
+                y1: 0,
+                x2: $(this).width(),
+                y2: $(this).height(),
+                show: true
+            });
+        });
+
+        //Set the 4 coordinates for the cropping
+        var setPreview = function (x, y, w, h) {
+            $('#X').val(x || 0);
+            $('#Y').val(y || 0);
+            $('#Width').val(w || preview[0].naturalWidth);
+            $('#Height').val(h || preview[0].naturalHeight);
+            $('#ChangeHeight').val($('#Height').val());
+            $('#ChangeWidth').val($('#Width').val());
+          
+        };
+
+        //Initialize the image area select plugin
+        var ias = preview.imgAreaSelect({
+            handles: true,
+            instance: true,
+            parent: 'body',
+            onSelectEnd: function (s, e) {
+                var scale = preview[0].naturalWidth / preview.width();
+                var _f = Math.floor;
+                setPreview(_f(scale * e.x1), _f(scale * e.y1), _f(scale * e.width), _f(scale * e.height));
+            }
+        });
+
+        //Check one of the checkboxes
+        var setBox = function (filter) {
+            $('button').attr('disabled', false);
+            boxes.attr('checked', false)
+            .filter(filter).attr({ 'checked': true, 'disabled': false });
+        };
+
+        //Initial state of X, Y, Width and Height is 0 0 1 1
+        setPreview(0, 0, 1, 1);
+
+        //Fetch Flickr images
+        var fetchImages = function (query) {
+            $.getJSON('http://www.flickr.com/services/feeds/photos_public.gne?jsoncallback=?', {
+                tags: query,
+                tagmode: "any",
+                format: "json"
+            }, function (data) {
+                var screen = $('<div />').addClass('waitScreen').click(function () {
+                    $(this).remove();
+                }).appendTo('body');
+                var box = $('<div />').addClass('flickrImages').appendTo(screen);
+                $.each(data.items, function (i, v) {
+                    console.log(data.items[i]);
+                    $('<img />').addClass('flickrImage').attr('src', data.items[i].media.m).click(function () {
+                        $('#Flickr').val(this.src).change();
+                        screen.remove();
+                    }).appendTo(box);
+                });
+            });
+        };
+
+        //Flickr
+        $('#FlickrQuery').change(function () {
+            fetchImages(this.value);
+        });
+
+        $('#Flickr').change(function () {
+            setBox('#IsFlickr');
+            preview.attr('src', this.value);
+        });
+
+        //What happens if the URL changes?
+        $('#Url').change(function () {
+            setBox('#IsUrl');
+            preview.attr('src', this.value);
+        });
+
+        //What happens if the File changes?
+        $('#File').change(function (evt) {
+            debugger;
+            var f = evt.target.files[0];
+            var reader = new FileReader();
+          
+            if (!f.type.match('image.*')) {
+                alert("The selected file does not appear to be an image.");
+                return;
+            }
+        
+            $('#FileName').val(f.name);
+            $('.main img').css('vertical-align', 'middle');
+            $('.alert-info').hide();
+            setBox('#IsFile');
+            reader.onload = function (e) { preview.attr('src', e.target.result); };
+            reader.readAsDataURL(f);
+        });
+
+        //What happens if any checkbox is checked ?!
+        boxes.change(function () {
+            setBox(this);
+            $('#' + this.id.substr(2)).change();
+        });
+
+        $('button').attr('disabled', true);
+        $('form').submit(function () {
+            $('#btnUpload').attr('disabled', true).text('Please wait ...');
+        });
+
+        $('#ImageRadius').on('change', function () {
+            $('#preview').attr('style','border-radius:'+ $(this).val()+'px');
+        });
+
+       
+
+         });
+
+</script>
+<div>
+
+
+    @using (Html.BeginForm("UploadImage", "Image", FormMethod.Post, new { enctype = "multipart/form-data" }))
+    {
+        @Html.HiddenFor(model => model.X)
+        @Html.HiddenFor(model => model.Y)
+        @Html.HiddenFor(model => model.Flickr)
+        @Html.HiddenFor(model => model.Height)
+        @Html.HiddenFor(model => model.Width)
+      
+
+        <div id="upload-choices">
+            <div class="editor-row">
+                @*@Html.ValidationSummary(true)*@
+            </div>
+        </div>
+
+        <div class="col-lg-8 col-md-8 col-sm-12 col-xs-12 text-center">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    
+                @Html.FileFor(model => model.File)</div>
+                <div class="panel-body" style="min-height:440px;">
+                    <div id="upload-cut" class="col-lg-8 col-md-8 col-sm-12 col-xs-12" align="left">
+                        <div>
+                            <img alt="Field for image cutting" id="preview" src="~/Content/empty.png" style="max-width:100%;max-height:100%;" />
+                        </div>
+                        <div class="alert-info">
+                            <span>Please Choose an Image... </span>
+                        </div>
+
+                    </div>
+                    <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12">
+                        <fieldset><legend>Edit</legend>   </fieldset>
+                        <div lass="form-group">
+                            <div class="col-lg-6 col-md-3 col-sm-6 col-xs-12">
+                            @Html.TextBoxFor(m => m.ChangeHeight, new { type = "number" ,placeholder = "Height", @class="form-control" } )
+                            </div>
+
+                            <div class="col-lg-6 col-md-3 col-sm-6  col-xs-12">
+                                @Html.TextBoxFor(m => m.ChangeWidth, new { type = "number", placeholder = "Width", @class = "form-control" })
+                            </div>
+                        </div>
+                        <br /><br /><br />
+                        <div lass="form-group">
+                            <div class="col-lg-6 col-md-3 col-sm-6  col-sm-12"><button class="btn btn-primary text-left" style="float:left" id="cropImage">Crop</button> </div>
+
+                            <div class="col-lg-6 col-md-3 col-sm-6  col-sm-12"><button class="btn btn-primary text-left" id="resetCropImage">Reset Crop</button> </div>
+                        </div>
+                        <br /><br /><br />
+                        <div lass="form-group">
+                            <div class="col-lg-6 col-md-3 col-sm-6  col-sm-12">@Html.TextBoxFor(m => m.ImageRadius, new { type = "text", placeholder = "Radius", @class = "form-control" }) </div>
+
+                        </div>
+
+                        <br /><br /><br />
+                        <div lass="form-group">
+                            <div class="col-lg-6 col-md-3 col-sm-6  col-sm-6">@Html.TextBoxFor(m => m.FileName, new { type = "text", placeholder = "File Name", @class = "form-control" }) </div>
+
+                            <div class="col-lg-6  col-md-3 col-sm-6  col-sm-6">@Html.DropDownListFor(m => m.FolderName, Model.Folders != null ? Model.Folders :
+                              Enumerable.Empty<SelectListItem>(), "Root", new { id = "ddlFolderName", @class = "form-control" }) </div>
+                        </div>
+
+                     
+
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="clear">
+                        <button type="submit" id="btnUpload" class="btn-group-sm success">Upload</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    }
+</div>

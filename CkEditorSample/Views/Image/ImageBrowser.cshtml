@@ -1,0 +1,60 @@
+﻿
+
+@{
+    ViewBag.Title = "ImageBrowser";
+    Layout = null;
+}
+@model CkEditorSample.Models.ImageModel
+<link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-2.2.1.min.js"></script>
+<script src="~/Scripts/bootstrap.min.js"></script>
+
+<style>
+    select {
+    border: 1px solid #93A9C8;
+    padding: 2px;
+    font-size: 1em;
+    color: #444;
+    width: 200px;
+    border-radius: 3px 3px 3px 3px;
+    -webkit-border-radius: 3px 3px 3px 3px;
+    -moz-border-radius: 3px 3px 3px 3px;
+    -o-border-radius: 3px 3px 3px 3px;
+}
+</style>
+<div>
+
+    <div style="text-align:center">
+        <div class="col-md-2" style="text-align: right;   padding-top: 7px;">
+            <label>Select Folder: </label>
+        </div>
+        <div class="col-md-3">
+            @Html.DropDownListFor(m => m.FolderName, Model.Folders != null ? Model.Folders :
+                              Enumerable.Empty<SelectListItem>(), "All", new { id = "ddlFolderName", @class = "form-control" })
+        </div>
+        </div>  
+    <div id="imageListPartial">
+        @Html.Partial("_ImageViewer", Model)
+    </div>
+</div>
+
+
+<script type="text/javascript">
+$(function(){
+
+    $('#ddlFolderName').on('change', function () {
+        debugger;
+      var selectedFolder =   $('#ddlFolderName :selected').val();
+      $.ajax({
+          url: "/Image/GetImageListByFolderName/",
+          type: "POST",
+          data: { folderName: selectedFolder },
+          success: function (data) {
+              debugger;
+              $('#imageListPartial').html(data);
+           }
+      });
+    });
+});
+
+</script>
